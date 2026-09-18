@@ -103,7 +103,7 @@
       border-radius: var(--radius-lg);
       padding: var(--space-6) var(--space-7);
     }
-    .report-intro h1 { line-height: 1.3; font-size: 1.75rem; }
+    .report-intro h1 { line-height: 1.3; font-size: 1.75rem; text-wrap: balance; }
     .report-intro__summary {
       max-width: 70ch;
       margin-top: var(--space-3);
@@ -209,6 +209,8 @@
       opacity: 0.75;
       margin-right: 6px;
     }
+    .plan__chevron { display: none; }
+    .plan__teaser { display: none; }
     .plan__grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -388,6 +390,74 @@
       .report-intro h1 { font-size: 1.375rem; }
       .plan { padding: var(--space-4); }
       .plan__grid { grid-template-columns: 1fr; }
+    }
+
+    /* === 手机端专属排版（≤560px） === */
+    @media (max-width: 560px) {
+      body { padding: 0.75rem 0 calc(2.5rem + env(safe-area-inset-bottom)); }
+      .page__content,
+      .report-intro__surface { width: calc(100% - 1.25rem); }
+
+      .report-intro { margin-bottom: var(--space-4); }
+      .report-intro__surface { padding: var(--space-4); border-radius: var(--radius-md); }
+      .report-intro h1 { font-size: 1.2rem; line-height: 1.35; }
+      .report-intro__summary { font-size: 0.8125rem; margin-top: var(--space-2); }
+      .report-intro__meta { margin-top: var(--space-3); gap: 6px; }
+      .report-intro__meta span { font-size: 0.75rem; padding: 1px 10px; }
+
+      /* 分类 / 时段筛选：横滑不换行，省竖向空间 */
+      .cats, .timefilter { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-bottom: var(--space-4); padding-bottom: 4px; }
+      .cats::-webkit-scrollbar, .timefilter::-webkit-scrollbar { display: none; }
+      .cat-btn, .time-btn { flex-shrink: 0; min-height: 40px; padding: 6px 16px; font-size: 0.875rem; }
+
+      .searchbar { margin-bottom: var(--space-3); }
+      .searchbar__input { min-height: 44px; font-size: 1rem; }
+
+      .plan { padding: var(--space-4); margin-bottom: var(--space-4); border-radius: var(--radius-md); }
+      .plan__title { font-size: 1.0625rem; line-height: 1.4; }
+      .plan__no { font-size: 0.75rem; }
+      .plan__grid { gap: var(--space-3); }
+
+      /* 折叠卡片：点主题展开 */
+      .plan__head { cursor: pointer; flex-wrap: wrap; gap: var(--space-1) var(--space-2); }
+      .plan__chevron { display: inline-block; margin-left: auto; color: var(--accent); transition: transform 0.2s ease; }
+      .plan--open .plan__chevron { transform: rotate(180deg); }
+      .plan__teaser { display: block; font-size: 0.8125rem; color: var(--muted); margin-top: var(--space-2); }
+      .plan--open .plan__teaser { display: none; }
+      .plan__body { display: none; }
+      .plan--open .plan__body { display: block; }
+
+      /* 使用步骤 */
+      .plan__steps { font-size: 0.8125rem; padding: var(--space-3); gap: 6px; }
+      .plan__steps-item { padding: 3px 10px; }
+
+      /* 复制块：更大字、更大按钮 */
+      .copy-block__head { padding: var(--space-2) var(--space-3); }
+      .copy-block__label { font-size: 0.875rem; }
+      .copy-block__label small { display: none; }
+      .copy-btn { min-height: 40px; padding: 5px 16px; font-size: 0.875rem; }
+      .copy-source { font-size: 0.875rem; padding: var(--space-3); }
+      .copy-line { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
+      .copy-line__text { font-size: 0.9375rem; }
+      .copy-btn--line { min-height: 36px; padding: 4px 12px; }
+
+      /* 话题 */
+      .plan__tags { margin-top: var(--space-3); }
+      .tag { font-size: 0.875rem; padding: 4px 14px; }
+
+      /* 分页：按钮大、可横滑 */
+      .pager { flex-wrap: nowrap; overflow-x: auto; justify-content: flex-start; gap: 8px; margin-top: var(--space-5); padding: var(--space-3) 0 8px; -webkit-overflow-scrolling: touch; }
+      .pager::-webkit-scrollbar { display: none; }
+      .pager__info { font-size: 0.8125rem; margin-bottom: var(--space-2); }
+      .page-btn { flex-shrink: 0; min-width: 42px; min-height: 42px; padding: 6px 12px; font-size: 0.9375rem; }
+
+      /* 运营指南 */
+      .ops-guide { padding: var(--space-4); margin-bottom: var(--space-4); }
+      .ops-guide h2 { font-size: 1.0625rem; }
+      .ops-card { padding: var(--space-3); }
+      .ops-card h3 { font-size: 0.9375rem; }
+
+      footer.page-foot { font-size: 0.75rem; }
     }
     @media print {
       .cat-btn, .pager, .copy-btn { display: none; }
@@ -1479,7 +1549,10 @@
             '<span class="plan__meta">' + esc(g.d) + '</span>' +
             '<span class="plan__badge plan__badge-' + timeOf(g) + '">' + timeOf(g) + '</span>' +
             '<span class="plan__meta plan__time"><span class="plan__time-label">建议发布时间</span>' + esc(g.p) + '</span>' +
+            '<span class="plan__chevron" aria-hidden="true">▾</span>' +
           '</div>' +
+          '<p class="plan__teaser">' + esc(g.cap) + '</p>' +
+          '<div class="plan__body">' +
           '<div class="plan__steps">' +
             '<span class="plan__steps-title">使用步骤</span>' +
             '<span class="plan__steps-item"><b>①</b>「图生成提示词」生成9:16图</span>' +
@@ -1539,6 +1612,7 @@
             '<div class="tag-list">' + tagHtml(g.tm, false) + '</div>' +
             '<p class="plan__tags-label">话题 · 备选（抖音 / 快手 / 小红书）</p>' +
             '<div class="tag-list">' + tagHtml(g.ta, true) + '</div>' +
+          '</div>' +
           '</div>' +
         '</div>';
     }
@@ -1648,6 +1722,13 @@
     });
 
     document.getElementById('plans').addEventListener('click', function (e) {
+      if (window.matchMedia && window.matchMedia('(max-width: 560px)').matches) {
+        var head = e.target.closest('.plan__head');
+        if (head && !e.target.closest('.copy-btn')) {
+          head.parentElement.classList.toggle('plan--open');
+          return;
+        }
+      }
       var b = e.target.closest('.copy-btn');
       if (!b) return;
       var el = document.getElementById('src-' + b.getAttribute('data-kind') + '-' + b.getAttribute('data-idx'));
