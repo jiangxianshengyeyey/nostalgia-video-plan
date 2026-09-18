@@ -211,6 +211,29 @@
     }
     .plan__chevron { display: none; }
     .plan__teaser { display: none; }
+    .log-list { list-style: none; margin: 0; padding: 0; }
+    .log-item { display: flex; gap: var(--space-3); align-items: baseline; padding: var(--space-2) 0; border-bottom: 1px dashed var(--border); font-size: 0.8125rem; }
+    .log-item:last-child { border-bottom: none; }
+    .log-time { color: var(--accent); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .log-text { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .log-empty { font-size: 0.8125rem; color: var(--muted); padding: var(--space-2) 0; }
+    .log-foot { display: flex; align-items: center; justify-content: space-between; margin-top: var(--space-2); }
+    .log-hint { font-size: 0.75rem; color: var(--muted); }
+    .log-clear { border: 1px solid var(--border); background: none; color: var(--text-2); border-radius: var(--radius-sm); padding: 4px 12px; font-size: 0.75rem; cursor: pointer; }
+    .log-clear:hover { background: var(--bg-2); }
+    .log-count { background: var(--accent); color: #fff; border-radius: 999px; font-size: 0.6875rem; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
+    .toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(16px); background: rgba(40, 32, 24, 0.92); color: #fff; font-size: 0.8125rem; padding: 8px 16px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; z-index: 99; max-width: 88vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .use-btn { border: 1px solid var(--border); background: none; color: var(--text-2); border-radius: var(--radius-sm); padding: 2px 10px; font-size: 0.75rem; cursor: pointer; flex: none; }
+    .use-btn:hover { background: var(--bg-2); }
+    .use-btn--confirm { border-color: #c0392b; color: #c0392b; background: #fdecea; }
+    .used-list { list-style: none; margin: 0; padding: 0; }
+    .used-item { display: flex; gap: var(--space-3); align-items: baseline; padding: var(--space-2) 0; border-bottom: 1px dashed var(--border); font-size: 0.8125rem; }
+    .used-item:last-child { border-bottom: none; }
+    .used-empty { color: var(--muted); }
+    .used-time { color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .used-text { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+    .used-undo { border: none; background: none; color: var(--accent); font-size: 0.75rem; cursor: pointer; padding: 0 4px; flex: none; }
     .plan__grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -604,6 +627,22 @@
           </ul>
           </div>
         </section>
+        <section class="ops-guide">
+          <h2 class="ops-guide__head">复制记录<span class="log-count" id="log-count"></span><span class="plan__chevron" aria-hidden="true">▾</span></h2>
+          <div class="ops-guide__body">
+            <ul class="log-list" id="copy-log"></ul>
+            <div class="log-foot">
+              <span class="log-hint">保存在本机，最多 50 条，含复制时间与日期</span>
+              <button class="log-clear" id="log-clear" type="button">清空记录</button>
+            </div>
+          </div>
+        </section>
+        <section class="ops-guide">
+          <h2 class="ops-guide__head">已使用 · 话题库<span class="log-count" id="used-count"></span><span class="plan__chevron" aria-hidden="true">▾</span></h2>
+          <div class="ops-guide__body">
+            <ul class="used-list" id="used-list"></ul>
+          </div>
+        </section>
         <div class="searchbar">
           <input type="search" id="search" class="searchbar__input" placeholder="搜索标题 / 文案 / 场景关键词" aria-label="关键词搜索" />
         </div>
@@ -619,9 +658,11 @@
     </div>
   </article>
 
+  <div class="toast" id="toast"></div>
+
   <script>
-    var STYLE_IMG = '80年代中国农村怀旧场景，低饱和度复古怀旧色调，老照片质感，轻微做旧，电影感，竖屏9:16构图';
-    var STYLE_VID = '镜头缓慢推进或横移，人物动作舒缓自然、连贯不僵硬，衣角随动作自然摆动，微风带动发丝与枝叶，炊烟、水波、光影自然流动，画面有呼吸感，节奏缓慢无快切';
+    var STYLE_IMG = '80年代中国农村怀旧场景，低饱和度复古怀旧色调，老照片质感，轻微做旧，电影感，定格在最自然生动的瞬间，人物姿态表情鲜活自然，竖屏9:16构图';
+    var STYLE_VID = '人物动作连贯进行中，多组连续小动作（抬手、弯腰、转身、注视、微笑），表情自然变化，偶尔抬眼看向镜头；发丝、衣角、枝叶随风轻摆，树影与光线缓缓移动，背景有鸟雀飞虫等细小动静；镜头带手持呼吸感轻微晃动，缓慢推近或横移，低角度贴近主体，焦点在人物与环境间自然转换，无快速切镜';
     var EXCLUDE = '现代建筑、柏油路、汽车、手机、鲜艳高饱和色彩、现代服装、肢体变形、多余手指、文字乱码、水印';
 
     function bgmFor(g) {
@@ -640,6 +681,7 @@
       if (time === '上午') fx.push('晨间鸟鸣');
       else if (time === '中午') fx.push('正午蝉鸣');
       else if (time === '晚上') fx.push('傍晚虫鸣');
+      fx = fx.concat(fxBoost(s)).filter(function (v, i, a) { return a.indexOf(v) === i; });
       var bgm;
       if (cat === '乡土') bgm = '怀旧钢琴+口琴民谣，舒缓温暖';
       else if (cat === '夏日') bgm = '轻快木吉他，明朗清新';
@@ -655,6 +697,34 @@
         fx: fx.join('、'),
         vo: '轻声女声旁白，念字幕钩子句：「' + g.cap + '」；也可纯字幕不配音，保留BGM与环境音'
       };
+    }
+
+    var MOTION = [
+      [/河|塘|井|溪|雨|洗|摸|捞|钓|泳|船|浪|波|莲|荷|菱/, '水花自然溅起，涟漪层层荡开，水面反光随波纹闪烁'],
+      [/鸡|鸭|鹅|猪|牛|羊|猫|狗|兔|鸽/, '家禽家畜小步走动、甩头抖羽，动作自然'],
+      [/蝉|蛙|蝈|萤|蝶|蜓|蜂|虫|蚂蚱|蜻蜓/, '虫蝶振翅飞动，绕人身旁盘旋，翅膀有细微振颤'],
+      [/树|叶|草|田|禾|稻|麦|苗|藤|瓜|竹|林/, '风过时枝叶、麦浪、藤蔓轻轻起伏摇摆，光影晃动'],
+      [/火|灶|烟|炊|烧|烤|煮|蒸|炸|熏|炕|锅/, '炊烟袅袅升腾，火光与热气轻轻晃动'],
+      [/集市|庙会|社火|灯会|摆摊|小贩|店铺|街市/, '人流缓缓走动，摊主忙碌张罗，热气与尘土在光线中浮动'],
+      [/雪|冰|霜|冬|腊月/, '雪花缓缓飘落，呵气成白雾'],
+      [/旗|风筝|秋千|球|绳|毽|陀螺|铁环|沙包|皮筋|键子/, '道具随动作晃动飞转，轨迹连贯自然'],
+      [/驴|马|骡|车|犁|担|筐/, '车身颠簸轻晃，担子随步伐自然起伏'],
+    ];
+    function motionLine(s) {
+      var hits = [];
+      MOTION.forEach(function (m) { if (m[0].test(s)) hits.push(m[1]); });
+      return hits.join('，');
+    }
+    function fxBoost(s) {
+      var hits = [];
+      if (/河|塘|井|溪|雨|洗|摸|捞|钓|泳|船|浪|波/.test(s)) hits.push('哗哗水声');
+      if (/蝉|知了/.test(s)) hits.push('蝉鸣由远及近');
+      if (/蛙/.test(s)) hits.push('蛙鸣');
+      if (/鸟|雀|燕子|麻雀/.test(s)) hits.push('鸟鸣扑翅声');
+      if (/火|灶|炊|烧|烤|煮|蒸|炸|熏|锅/.test(s)) hits.push('柴火噼啪声');
+      if (/集市|庙会|社火|灯会|摆摊|小贩/.test(s)) hits.push('吆喝声、人声嘈杂');
+      if (/风/.test(s)) hits.push('风声掠过');
+      return hits;
     }
 
     var DATA = [
@@ -1583,7 +1653,8 @@
     function planHtml(g, idx) {
       var promptImg = '【画面】' + g.s + '。' + STYLE_IMG + '\n【排除】' + EXCLUDE;
       var a = bgmFor(g);
-      var promptVid = '【画面】' + g.s + '。' + g.v + '。' + STYLE_VID + '，时长' + g.d +
+      var mov = motionLine(g.s + ' ' + g.t);
+      var promptVid = '【画面】' + g.s + '。' + g.v + '。' + (mov ? mov + '，' : '') + STYLE_VID + '，节奏舒缓，时长' + g.d +
         '\n【BGM】' + a.bgm +
         '\n【音效】' + a.fx +
         '\n【配音】' + a.vo;
@@ -1596,6 +1667,7 @@
             '<span class="plan__meta">' + esc(g.d) + '</span>' +
             '<span class="plan__badge plan__badge-' + timeOf(g) + '">' + timeOf(g) + '</span>' +
             '<span class="plan__meta plan__time"><span class="plan__time-label">建议发布时间</span>' + esc(g.p) + '</span>' +
+            '<button class="use-btn" type="button" data-title="' + esc(g.t) + '">已使用</button>' +
             '<span class="plan__chevron" aria-hidden="true">▾</span>' +
           '</div>' +
           '<p class="plan__teaser">' + esc(g.cap) + '</p>' +
@@ -1613,43 +1685,43 @@
             '<div class="copy-block">' +
               '<div class="copy-block__head">' +
                 '<span class="copy-block__label">图生成提示词<small>画面 + 风格 + 排除</small></span>' +
-                '<button class="copy-btn" type="button" data-idx="' + idx + '" data-kind="p1">复制</button>' +
+                '<button class="copy-btn" type="button" data-idx="' + idx + '" data-kind="p1" data-title="' + esc(g.t) + '" data-cat="' + esc(g.c) + '">复制</button>' +
               '</div>' +
               '<pre class="copy-source zh" id="src-p1-' + idx + '">' + esc(promptImg) + '</pre>' +
             '</div>' +
             '<div class="copy-block">' +
               '<div class="copy-block__head">' +
                 '<span class="copy-block__label">视频生成提示词<small>画面 + 运镜 + BGM + 配音</small></span>' +
-                '<button class="copy-btn" type="button" data-idx="' + idx + '" data-kind="p2">复制</button>' +
+                '<button class="copy-btn" type="button" data-idx="' + idx + '" data-kind="p2" data-title="' + esc(g.t) + '" data-cat="' + esc(g.c) + '">复制</button>' +
               '</div>' +
               '<pre class="copy-source zh" id="src-p2-' + idx + '">' + esc(promptVid) + '</pre>' +
             '</div>' +
             '<div class="copy-block copy-block--full">' +
               '<div class="copy-block__head">' +
                 '<span class="copy-block__label">文案<small>字幕+正文+置顶+话题，可单独复制</small></span>' +
-                '<button class="copy-btn" type="button" data-idx="' + idx + '" data-kind="c">复制全部</button>' +
+                '<button class="copy-btn" type="button" data-idx="' + idx + '" data-kind="c" data-title="' + esc(g.t) + '" data-cat="' + esc(g.c) + '">复制全部</button>' +
               '</div>' +
               '<pre class="copy-src-hidden" id="src-c-' + idx + '">' + esc(copy) + '</pre>' +
               '<div class="copy-lines">' +
                 '<div class="copy-line">' +
                   '<span class="copy-line__label">【字幕】</span>' +
                   '<span class="copy-line__text" id="src-cap-' + idx + '">' + esc(g.cap) + '</span>' +
-                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="cap">复制</button>' +
+                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="cap" data-title="' + esc(g.t) + '" data-cat="' + esc(g.c) + '">复制</button>' +
                 '</div>' +
                 '<div class="copy-line">' +
                   '<span class="copy-line__label">【正文】</span>' +
                   '<span class="copy-line__text" id="src-b-' + idx + '">' + esc(g.b) + '</span>' +
-                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="b">复制</button>' +
+                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="b" data-title="' + esc(g.t) + '" data-cat="' + esc(g.c) + '">复制</button>' +
                 '</div>' +
                 '<div class="copy-line">' +
                   '<span class="copy-line__label">【置顶】</span>' +
                   '<span class="copy-line__text" id="src-pin-' + idx + '">' + esc(g.pin) + '</span>' +
-                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="pin">复制</button>' +
+                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="pin" data-title="' + esc(g.t) + '" data-cat="' + esc(g.c) + '">复制</button>' +
                 '</div>' +
                 '<div class="copy-line">' +
                   '<span class="copy-line__label">【话题】</span>' +
                   '<span class="copy-line__text" id="src-tags-' + idx + '">' + esc(g.tm.join(' ') + ' ' + g.ta.join(' ')) + '</span>' +
-                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="tags">复制</button>' +
+                  '<button class="copy-btn copy-btn--line" type="button" data-idx="' + idx + '" data-kind="tags" data-title="' + esc(g.t) + '" data-cat="' + esc(g.c) + '">复制</button>' +
                 '</div>' +
               '</div>' +
             '</div>' +
@@ -1677,7 +1749,10 @@
     }
 
     function filtered() {
+      var usedTitles = {};
+      getUsed().forEach(function (u) { usedTitles[u.t] = 1; });
       var list = curCat === '全部' ? DATA : DATA.filter(function (g) { return g.c === curCat; });
+      list = list.filter(function (g) { return !usedTitles[g.t]; });
       if (curTime !== '全部') list = list.filter(function (g) { return timeOf(g) === curTime; });
       if (curSearch) {
         var q = curSearch.toLowerCase();
@@ -1695,7 +1770,7 @@
       var slice = list.slice((curPage - 1) * PER, curPage * PER);
 
       var html = slice.map(function (g, i) { return planHtml(g, DATA.indexOf(g)); }).join('');
-      document.getElementById('plans').innerHTML = html || '<p style="color:var(--muted);text-align:center;padding:32px 0;">该分类暂无内容</p>';
+      document.getElementById('plans').innerHTML = html || '<p style="color:var(--muted);text-align:center;padding:32px 0;">该筛选下暂无未使用内容，可在「已使用 · 话题库」中撤销</p>';
 
       var pager = '<p class="pager__info">第 ' + curPage + ' / ' + pages + ' 页 · 共 ' + list.length + ' 组</p>';
       pager += '<button class="page-btn" data-page="prev"' + (curPage === 1 ? ' disabled' : '') + '>‹ 上一页</button>';
@@ -1771,10 +1846,25 @@
     document.getElementById('plans').addEventListener('click', function (e) {
       if (window.matchMedia && window.matchMedia('(max-width: 560px)').matches) {
         var head = e.target.closest('.plan__head');
-        if (head && !e.target.closest('.copy-btn')) {
+        if (head && !e.target.closest('.copy-btn') && !e.target.closest('.use-btn')) {
           head.parentElement.classList.toggle('plan--open');
           return;
         }
+      }
+      var u = e.target.closest('.use-btn');
+      if (u) {
+        if (u.classList.contains('use-btn--confirm')) {
+          markUsed(u.getAttribute('data-title'));
+          toast('已标记使用，已移入话题库');
+          render();
+          renderUsed();
+        } else {
+          u.classList.add('use-btn--confirm');
+          u.textContent = '确认已用';
+          clearTimeout(u._tm);
+          u._tm = setTimeout(function () { u.classList.remove('use-btn--confirm'); u.textContent = '已使用'; }, 2500);
+        }
+        return;
       }
       var b = e.target.closest('.copy-btn');
       if (!b) return;
@@ -1785,6 +1875,7 @@
         b.textContent = '已复制';
         b.classList.add('copied');
         setTimeout(function () { b.textContent = old; b.classList.remove('copied'); }, 1600);
+        addLog(b);
       });
     });
 
@@ -1811,6 +1902,96 @@
       if (h) h.parentElement.classList.toggle('ops-guide--open');
     });
 
+    var KINDS = { p1: '图生成提示词', p2: '视频生成提示词', c: '文案全部', cap: '字幕', b: '正文', pin: '置顶', tags: '话题' };
+    var LOG_KEY = 'copyLog900';
+    function fmtNow() {
+      var d = new Date();
+      function p(n) { return (n < 10 ? '0' : '') + n; }
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds());
+    }
+    function getLog() { try { return JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); } catch (e) { return []; } }
+    function saveLog(arr) { try { localStorage.setItem(LOG_KEY, JSON.stringify(arr)); } catch (e) {} }
+    function addLog(b) {
+      var arr = getLog();
+      arr.unshift({
+        dt: fmtNow(),
+        cat: b.getAttribute('data-cat') || '',
+        title: b.getAttribute('data-title') || '',
+        kind: KINDS[b.getAttribute('data-kind')] || b.getAttribute('data-kind')
+      });
+      saveLog(arr.slice(0, 50));
+      renderLog();
+      toast('已复制 · 已记录 ' + arr[0].dt.slice(5, 16));
+    }
+    function renderLog() {
+      var arr = getLog();
+      var cnt = document.getElementById('log-count');
+      var list = document.getElementById('copy-log');
+      if (cnt) cnt.textContent = arr.length ? arr.length + ' 条' : '';
+      if (!list) return;
+      if (!arr.length) {
+        list.innerHTML = '<li class="log-empty">暂无记录 · 复制任意内容后自动记录（含日期时间）</li>';
+        return;
+      }
+      list.innerHTML = arr.map(function (it) {
+        return '<li class="log-item"><span class="log-time">' + esc(it.dt) + '</span><span class="log-text">' + esc(it.cat) + ' · ' + esc(it.title) + ' · ' + esc(it.kind) + '</span></li>';
+      }).join('');
+    }
+    function toast(msg) {
+      var t = document.getElementById('toast');
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(t._tm);
+      t._tm = setTimeout(function () { t.classList.remove('show'); }, 1600);
+    }
+    document.getElementById('log-clear').addEventListener('click', function () {
+      saveLog([]);
+      renderLog();
+      toast('已清空复制记录');
+    });
+
+    var USED_KEY = 'usedList900';
+    function getUsed() { try { return JSON.parse(localStorage.getItem(USED_KEY) || '[]'); } catch (e) { return []; } }
+    function saveUsed(arr) { try { localStorage.setItem(USED_KEY, JSON.stringify(arr)); } catch (e) {} }
+    function findGroup(t) {
+      for (var i = 0; i < DATA.length; i++) if (DATA[i].t === t) return DATA[i];
+      return null;
+    }
+    function markUsed(t) {
+      var arr = getUsed();
+      for (var i = 0; i < arr.length; i++) if (arr[i].t === t) return;
+      arr.unshift({ t: t, dt: fmtNow() });
+      saveUsed(arr);
+    }
+    function renderUsed() {
+      var arr = getUsed();
+      var cnt = document.getElementById('used-count');
+      var list = document.getElementById('used-list');
+      if (cnt) cnt.textContent = arr.length ? arr.length + ' 条' : '';
+      if (!list) return;
+      if (!arr.length) {
+        list.innerHTML = '<li class="used-item used-empty">暂无已使用主题 · 点卡片上的「已使用」后自动移入此处</li>';
+        return;
+      }
+      list.innerHTML = arr.map(function (u) {
+        var g = findGroup(u.t);
+        var cat = g ? g.c : '';
+        return '<li class="used-item"><span class="used-time">' + esc(u.dt) + '</span><span class="used-text">' + esc(cat) + ' · ' + esc(u.t) + '</span><button class="used-undo" type="button" data-title="' + esc(u.t) + '">撤销</button></li>';
+      }).join('');
+    }
+    document.getElementById('used-list').addEventListener('click', function (e) {
+      var b = e.target.closest('.used-undo');
+      if (!b) return;
+      var t = b.getAttribute('data-title');
+      saveUsed(getUsed().filter(function (u) { return u.t !== t; }));
+      toast('已撤销，主题放回列表');
+      render();
+      renderUsed();
+    });
+
+    renderUsed();
+    renderLog();
     renderCats();
     render();
   </script>
