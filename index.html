@@ -224,9 +224,13 @@
     .log-count { background: var(--accent); color: #fff; border-radius: 999px; font-size: 0.6875rem; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
     .toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%) translateY(16px); background: rgba(40, 32, 24, 0.92); color: #fff; font-size: 0.8125rem; padding: 8px 16px; border-radius: 999px; opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; z-index: 99; max-width: 88vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    .use-btn { border: 1px solid var(--border); background: none; color: var(--text-2); border-radius: var(--radius-sm); padding: 2px 10px; font-size: 0.75rem; cursor: pointer; flex: none; }
-    .use-btn:hover { background: var(--bg-2); }
-    .use-btn--confirm { border-color: #c0392b; color: #c0392b; background: #fdecea; }
+    .use-btn { background: #4b3a2a; color: #fff; border: none; border-radius: 8px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; flex: none; }
+    .use-btn:hover { background: #3a2d20; }
+    .use-btn--confirm { background: #c0392b; color: #fff; }
+    .ai-update { background: linear-gradient(135deg, #d96a2e, #b8551d); color: #fff; border: none; border-radius: 8px; padding: 4px 14px; font-size: 0.8rem; font-weight: 700; cursor: pointer; flex: none; box-shadow: 0 1px 4px rgba(184,85,29,.4); }
+    .ai-update:hover { filter: brightness(1.1); }
+    .ai-update:disabled { opacity: .6; cursor: wait; filter: none; }
+    .plan__ai-badge { font-size: 0.68rem; color: var(--accent-active); border: 1px solid var(--accent); background: var(--accent-soft); border-radius: 999px; padding: 1px 7px; margin-left: 6px; flex: none; }
     .used-list { list-style: none; margin: 0; padding: 0; }
     .used-item { display: flex; gap: var(--space-3); align-items: baseline; padding: var(--space-2) 0; border-bottom: 1px dashed var(--border); font-size: 0.8125rem; }
     .used-item:last-child { border-bottom: none; }
@@ -465,6 +469,7 @@
       .copy-block__label { font-size: 0.875rem; }
       .copy-block__label small { display: none; }
       .copy-btn { min-height: 40px; padding: 5px 16px; font-size: 0.875rem; }
+      .ai-update, .use-btn { min-height: 34px; padding: 4px 12px; font-size: 0.8rem; }
       .copy-source { font-size: 0.875rem; padding: var(--space-3); }
       .copy-line { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
       .copy-line__text { font-size: 0.9375rem; }
@@ -489,7 +494,7 @@
       footer.page-foot { font-size: 0.75rem; }
     }
     @media print {
-      .cat-btn, .pager, .copy-btn { display: none; }
+      .cat-btn, .pager, .copy-btn, .ai-update, .use-btn { display: none; }
       .plan { break-inside: avoid; }
     }
 
@@ -562,6 +567,53 @@
     .ops-steps h3 { font-size: 0.9375rem; margin-bottom: 8px; }
     .ops-steps ol { margin: 0; padding-left: 1.2rem; }
     .ops-steps li { font-size: 0.8125rem; color: var(--page-text-secondary); margin-top: 4px; }
+    .ana-bar { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 4px; }
+    .ana-btn { padding: 9px 14px; border: 1px solid rgba(0,0,0,.12); border-radius: 10px; background: #fff; color: #333; font-size: .9375rem; cursor: pointer; }
+    .ana-btn--primary { background: #b8551d; color: #fff; border-color: transparent; }
+    .ana-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .ana-stat { background: rgba(0,0,0,.04); border-radius: 10px; padding: 8px 6px; text-align: center; }
+    .ana-stat b { display: block; font-size: 1.05rem; line-height: 1.3; }
+    .ana-stat span { font-size: .75rem; color: #888; }
+    .ana-rec { border: 1px solid rgba(0,0,0,.12); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; background: #fff; }
+    .ana-rec__head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .ana-rec__head b { font-size: .9375rem; }
+    .ana-grade { font-size: .72rem; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+    .ana-grade--优 { background: #e8f5e9; color: #2e7d32; }
+    .ana-grade--良 { background: #e3f2fd; color: #1565c0; }
+    .ana-grade--中 { background: #fff3e0; color: #e65100; }
+    .ana-grade--差 { background: #fdecea; color: #c62828; }
+    .ana-rec__meta { font-size: .78rem; color: #888; margin: 4px 0 6px; }
+    .ana-rec__adv { margin: 0; padding-left: 18px; font-size: .85rem; color: #444; }
+    .ana-rec__adv li { margin: 2px 0; }
+    .ana-del { border: none; background: none; color: #c62828; font-size: .78rem; cursor: pointer; margin-top: 6px; padding: 0; }
+    .ana-empty { color: #888; font-size: .875rem; }
+    .ana-lib__toggle { display: flex; justify-content: space-between; align-items: center; width: 100%; border: 1px solid rgba(184,85,29,.35); background: #fdf3ea; color: #b8551d; border-radius: 10px; padding: 10px 14px; font-size: .9rem; font-weight: 700; cursor: pointer; box-sizing: border-box; }
+    .ana-lib__arrow { font-size: .85rem; }
+    .ana-lib__body { margin-top: 8px; }
+    .ana-lib__body[hidden] { display: none; }
+    .ana-rec { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; border: 1px solid rgba(0,0,0,.1); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; background: #fff; }
+    .ana-rec__title { font-size: .9rem; font-weight: 700; }
+    .ana-rec__meta { font-size: .76rem; color: #888; margin: 0; flex: 1 1 100%; }
+    .ana-del { margin-top: 0; margin-left: auto; }
+    .ana-report { background: rgba(184,85,29,.08); border-left: 3px solid #b8551d; border-radius: 8px; padding: 10px 12px; font-size: .875rem; white-space: pre-line; margin: 8px 0; color: #5b3a24; }
+    .ana-modal { position: fixed; inset: 0; background: rgba(0,0,0,.45); display: flex; align-items: center; justify-content: center; z-index: 99; padding: 16px; }
+    .ana-modal[hidden] { display: none; }
+    .ana-modal__card { background: #fff; border-radius: 14px; padding: 18px; width: 100%; max-width: 420px; max-height: 90vh; overflow: auto; box-sizing: border-box; }
+    .ana-modal__card h3 { margin: 0 0 12px; }
+    .ana-modal__card label { display: block; font-size: .85rem; color: #666; margin-bottom: 10px; }
+    .ana-modal__card input, .ana-modal__card select { width: 100%; margin-top: 4px; padding: 9px 10px; border: 1px solid rgba(0,0,0,.15); border-radius: 8px; font-size: .9375rem; box-sizing: border-box; background: #fff; color: #333; }
+    .ana-modal__row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ana-modal__btns { display: flex; gap: 10px; margin-top: 6px; }
+    .ana-modal__btns .ana-btn { flex: 1; }
+    .ana-preview { margin: -2px 0 12px; padding: 10px 12px; border: 1px dashed rgba(184,85,29,.45); border-radius: 10px; background: #fdf6f0; }
+    .ana-preview[hidden] { display: none; }
+    .ana-preview__head { font-size: .82rem; font-weight: 700; color: #b8551d; margin-bottom: 6px; }
+    .ana-preview__line { font-size: .82rem; color: #555; line-height: 1.55; padding: 2px 0; border-top: 1px dotted rgba(0,0,0,.08); }
+    .ana-preview__line b { color: #b8551d; margin-right: 6px; }
+    @media (min-width: 1280px) {
+      .ops-grid-wide { display: grid; grid-template-columns: 1.25fr 1fr; gap: 20px; align-items: start; }
+      .ops-grid-wide > .ops-guide--sticky { position: sticky; top: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -583,6 +635,8 @@
     <div class="page__content">
       <main>
 
+      <div class="ops-grid-wide">
+        <div>
                 <section class="ops-guide">
           <h2 class="ops-guide__head">发布建议 · 每日三发<span class="plan__chevron" aria-hidden="true">▾</span></h2>
           <div class="ops-guide__body">
@@ -627,6 +681,23 @@
           </ul>
           </div>
         </section>
+        </div>
+        <section class="ops-guide ops-guide--sticky" id="ana-sec">
+          <h2 class="ops-guide__head">视频数据复盘中心<span class="log-count" id="ana-count"></span><span class="plan__chevron" aria-hidden="true">▾</span></h2>
+          <div class="ops-guide__body">
+            <p class="ops-guide__sub">发布后回来填播放 / 点赞 / 评论 / 转发，自动打分给建议（数据仅存本机）。可接 DeepSeek AI 深度分析，密钥仅存本机、直连官方。</p>
+            <div class="ana-bar">
+              <button class="ana-btn ana-btn--primary" id="ana-add" type="button">＋ 添加视频数据</button>
+              <button class="ana-btn" id="ana-report" type="button">生成运营报告</button>
+              <button class="ana-btn" id="ana-ai" type="button">AI 深度分析</button>
+              <button class="ana-btn" id="ana-ai-set" type="button">AI 设置</button>
+            </div>
+            <div class="ana-stats" id="ana-stats"></div>
+            <div class="ana-report" id="ana-report-out" hidden></div>
+            <div class="ana-records" id="ana-records"></div>
+          </div>
+        </section>
+      </div>
         <section class="ops-guide">
           <h2 class="ops-guide__head">复制记录<span class="log-count" id="log-count"></span><span class="plan__chevron" aria-hidden="true">▾</span></h2>
           <div class="ops-guide__body">
@@ -651,6 +722,39 @@
         <div id="plans"></div>
         <nav class="pager" id="pager" aria-label="分页"></nav>
       </main>
+
+      <div class="ana-modal" id="ana-modal" hidden>
+        <div class="ana-modal__card">
+          <h3>添加视频数据</h3>
+          <label>主题（输入关键词自动联想，选中后自动带出文案）
+            <input id="ana-f-title" list="ana-titles" placeholder="如：河塘摸鱼" autocomplete="off" />
+            <datalist id="ana-titles"></datalist>
+          </label>
+          <div class="ana-preview" id="ana-preview" hidden></div>
+          <div class="ana-modal__row">
+            <label>时段
+              <select id="ana-f-slot">
+                <option>上午 07:00–09:00</option>
+                <option>中午 12:00–14:00</option>
+                <option>晚上 19:00–22:00</option>
+              </select>
+            </label>
+            <label>日期<input type="date" id="ana-f-date" /></label>
+          </div>
+          <div class="ana-modal__row">
+            <label>播放量<input type="number" id="ana-f-views" min="0" placeholder="0" /></label>
+            <label>点赞<input type="number" id="ana-f-likes" min="0" placeholder="0" /></label>
+          </div>
+          <div class="ana-modal__row">
+            <label>评论<input type="number" id="ana-f-comments" min="0" placeholder="0" /></label>
+            <label>转发<input type="number" id="ana-f-shares" min="0" placeholder="0" /></label>
+          </div>
+          <div class="ana-modal__btns">
+            <button class="ana-btn ana-btn--primary" id="ana-save" type="button">保存并分析</button>
+            <button class="ana-btn" id="ana-cancel" type="button">取消</button>
+          </div>
+        </div>
+      </div>
 
       <footer class="page-foot">
         <p>怀旧题材短视频 · 微信视频号 900 组发布方案（每类 180 组，早 / 午 / 晚各 300 组），可直接复制使用。文案正文均控制在 60 字以内，首句即钩子；话题主推视频号热词，备选抖音 / 快手 / 小红书。</p>
@@ -1666,6 +1770,16 @@
     }
 
     function planHtml(g, idx) {
+      var ov = getOv()[g.t];
+      var aiBadge = ov ? '<span class="plan__ai-badge" title="已用 AI 更新，复制内容为 AI 新版">AI改</span>' : '';
+      if (ov) {
+        g = {
+          c: g.c, t: g.t, p: g.p,
+          d: ov.d || g.d, s: ov.s || g.s, v: ov.v || g.v,
+          cap: ov.cap || g.cap, b: ov.b || g.b, pin: ov.pin || g.pin,
+          tm: ov.tm || g.tm, ta: ov.ta || g.ta,
+        };
+      }
       var promptImg = '【画面】' + g.s + '。' + STYLE_IMG + '\n【排除】' + EXCLUDE;
       var a = bgmFor(g);
       var mov = motionLine(g.s + ' ' + g.t);
@@ -1678,10 +1792,11 @@
         '<div class="plan">' +
           '<div class="plan__head">' +
             '<span class="plan__no">NO.' + (idx + 1) + '</span>' +
-            '<span class="plan__title">' + esc(g.t) + '</span>' +
+            '<span class="plan__title">' + esc(g.t) + '</span>' + aiBadge +
             '<span class="plan__meta">' + esc(g.d) + '</span>' +
             '<span class="plan__badge plan__badge-' + timeOf(g) + '">' + timeOf(g) + '</span>' +
             '<span class="plan__meta plan__time"><span class="plan__time-label">建议发布时间</span>' + esc(g.p) + '</span>' +
+            '<button class="ai-update" type="button" data-idx="' + idx + '" data-title="' + esc(g.t) + '">AI 更新</button>' +
             '<button class="use-btn" type="button" data-title="' + esc(g.t) + '">已使用</button>' +
             '<span class="plan__chevron" aria-hidden="true">▾</span>' +
           '</div>' +
@@ -1858,14 +1973,97 @@
       render();
     });
 
+    // ============ AI 更新主题（DeepSeek 重新生成并覆盖） ============
+    var OV_KEY = 'nvp_ai_overrides';
+    function getOv() { try { return JSON.parse(localStorage.getItem(OV_KEY) || '{}'); } catch (e) { return {}; } }
+    function saveOv(o) { try { localStorage.setItem(OV_KEY, JSON.stringify(o)); } catch (e) {} }
+    function aiErrMsg(res) {
+      var e = res && res.j && res.j.error;
+      if (!e) return 'HTTP ' + res.ok;
+      if (res.ok === 401) return 'Key 无效或已过期，请重新在「AI 设置」填写';
+      if (res.ok === 429) return '请求过于频繁，请稍后再试';
+      return e.message || e.type || ('HTTP ' + res.ok);
+    }
+    function aiExtract(txt) {
+      var m = String(txt || '').replace(/```(json)?/gi, '').match(/\{[\s\S]*\}/);
+      if (!m) return null;
+      try { return JSON.parse(m[0]); } catch (e) { return null; }
+    }
+    function aiNormArr(a, n, fallback) {
+      if (!Array.isArray(a)) a = [];
+      a = a.map(function (s) { s = String(s || '').trim(); if (s && s.charAt(0) !== '#') s = '#' + s; return s; }).filter(Boolean);
+      while (a.length < n) a.push(fallback);
+      return a.slice(0, n);
+    }
+    function aiUpdate(btn) {
+      var g = DATA[+btn.getAttribute('data-idx')];
+      if (!g) { toast('未找到该主题'); return; }
+      var key = aiKey();
+      if (!key) { toast('请先点「AI 设置」粘贴 DeepSeek Key'); return; }
+      var old = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '更新中…';
+      var prompt =
+        '为怀旧短视频主题「' + g.t + '」（分类：' + g.c + '）重新创作一套发布内容。要求：\n' +
+        '1. img：图生成提示词，60字内80年代中国农村怀旧画面，具体人物动作+环境，无现代元素；\n' +
+        '2. vid：视频生成提示词，画面+运镜+动态细节（连贯动作、自然表情、微风衣角、手持呼吸感）+时长；\n' +
+        '3. cap：字幕钩子，≤22字，口语化有悬念；\n' +
+        '4. b：正文，共3句、总≤60字，口语化，末句是"为什么…？"式提问；\n' +
+        '5. pin：置顶评论，1句互动引导，≤20字；\n' +
+        '6. tm：6个主推话题（#开头，微信视频号热词）；ta：3个备选话题（#开头）；\n' +
+        '7. d：建议时长，5-9秒之一。\n' +
+        '只输出一个JSON对象，不要任何解释或代码块标记：{"img":"…","vid":"…","cap":"…","b":"…","pin":"…","tm":["#…","#…","#…","#…","#…","#…"],"ta":["#…","#…","#…"],"d":"6秒"}';
+      fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            { role: 'system', content: '你是专业的短视频内容生成器，只输出合法的 JSON 对象。' },
+            { role: 'user', content: prompt },
+          ],
+          temperature: 0.9,
+          max_tokens: 900,
+        }),
+      })
+        .then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+        .then(function (res) {
+          if (!res.ok || !res.j || !res.j.choices || !res.j.choices[0]) throw new Error(aiErrMsg(res));
+          var data = aiExtract(res.j.choices[0].message.content);
+          if (!data) throw new Error('AI 返回格式无法解析，请重试');
+          data = {
+            s: String(data.img || g.s).trim(),
+            v: String(data.vid || g.v).trim(),
+            d: String(data.d || g.d).trim(),
+            cap: String(data.cap || g.cap).trim().slice(0, 22),
+            b: String(data.b || g.b).trim().slice(0, 60),
+            pin: String(data.pin || g.pin).trim().slice(0, 30),
+            tm: aiNormArr(data.tm, 6, '#' + g.t),
+            ta: aiNormArr(data.ta, 3, '#' + g.c),
+          };
+          var ov = getOv();
+          ov[g.t] = data;
+          saveOv(ov);
+          render();
+          toast('已用 AI 更新「' + g.t + '」');
+        })
+        .catch(function (e) {
+          btn.disabled = false;
+          btn.textContent = old;
+          toast('AI 更新失败：' + String((e && e.message) || e));
+        });
+    }
+
     document.getElementById('plans').addEventListener('click', function (e) {
       if (window.matchMedia && window.matchMedia('(max-width: 560px)').matches) {
         var head = e.target.closest('.plan__head');
-        if (head && !e.target.closest('.copy-btn') && !e.target.closest('.use-btn')) {
+        if (head && !e.target.closest('.copy-btn') && !e.target.closest('.use-btn') && !e.target.closest('.ai-update')) {
           head.parentElement.classList.toggle('plan--open');
           return;
         }
       }
+      var ai = e.target.closest('.ai-update');
+      if (ai) { aiUpdate(ai); return; }
       var u = e.target.closest('.use-btn');
       if (u) {
         if (u.classList.contains('use-btn--confirm')) {
@@ -2005,6 +2203,235 @@
       renderUsed();
     });
 
+    // ============ 视频数据复盘 ============
+    var ANA_KEY = 'nvp_metrics';
+    var ana = [];
+    function loadAna() { try { ana = JSON.parse(localStorage.getItem(ANA_KEY) || '[]'); } catch (e) { ana = []; } }
+    function saveAna() { localStorage.setItem(ANA_KEY, JSON.stringify(ana)); }
+    function catOfTitle(t) { var g = findGroup(t); return g ? g.c : ''; }
+    function slotOf(p) { return (p || '').indexOf('上午') === 0 ? '上午' : (p || '').indexOf('中午') === 0 ? '中午' : '晚上'; }
+    var CAT_ADV = {
+      '乡土': '乡土题材情怀密度高，画面配提问式文案最容易引发"小时候都这样"的认同感。',
+      '夏日': '夏日题材季节性明显，趁当前季节连续发力，画面突出凉意（水、树荫、冰棍）。',
+      '校园': '校园回忆杀评论转化最高，结尾必问"你们班还有谁"，配八音盒/口琴音乐。',
+      '老物件': '老物件受收藏与怀旧人群偏爱，评论区易聊知识，主动回复补充背景故事。',
+      '节日年味': '年味题材节点流量大，节前 1-2 周集中发力，团圆画面转发率最高。',
+    };
+    function analyzeRec(r) {
+      var v = +r.views || 0, l = +r.likes || 0, c = +r.comments || 0, s = +r.shares || 0;
+      var lr = v ? l / v : 0, cr = v ? c / v : 0, sr = v ? s / v : 0;
+      var score = Math.min(v / 100, 1) * 25 + Math.min(lr / 0.08, 1) * 30 + Math.min(cr / 0.01, 1) * 25 + Math.min(sr / 0.01, 1) * 20;
+      var grade = score >= 85 ? '优' : score >= 65 ? '良' : score >= 45 ? '中' : '差';
+      var adv = [];
+      if (v < 100) adv.push('曝光不足：发布后 1 小时内转发朋友圈 + 2-3 个群，标题带话题标签');
+      if (v >= 100 && lr < 0.03) adv.push('点赞率偏低：共鸣点没打透，正文多一句"你还记得吗"式提问');
+      if (cr < 0.01) adv.push('评论少：结尾问句更口语化，自己先置顶一条引导评论');
+      if (sr < 0.01) adv.push('转发少：缺情绪钩子，可加"转发给爸妈看看"式引导');
+      if (!adv.length) adv.push('数据健康：保持选题节奏，可尝试同类主题连发 3 条');
+      var ca = CAT_ADV[r.c];
+      if (ca && adv.length < 3) adv.push(ca);
+      return { score: Math.round(score), grade: grade, adv: adv };
+    }
+    function fmtRate(x) { return (x * 100).toFixed(1) + '%'; }
+    var anaLibOpen = false;
+    function renderAna() {
+      var cnt = document.getElementById('ana-count');
+      if (cnt) cnt.textContent = ana.length ? ana.length + ' 条' : '';
+      var stats = document.getElementById('ana-stats');
+      var recs = document.getElementById('ana-records');
+      if (!stats || !recs) return;
+      if (!ana.length) {
+        stats.innerHTML = '';
+        recs.innerHTML = '<p class="ana-empty">还没有数据。发布后用「＋ 添加视频数据」回填播放/点赞/评论/转发，我会自动分析。</p>';
+        return;
+      }
+      var avgV = 0, catMap = {}, slotMap = {}, bestCat = '', bestSlot = '', bestAvg = 0;
+      ana.forEach(function (r) {
+        avgV += +r.views || 0;
+        (catMap[r.c] = catMap[r.c] || { n: 0, v: 0 }).n++;
+        catMap[r.c].v += +r.views || 0;
+        (slotMap[r.slot] = slotMap[r.slot] || { n: 0, v: 0 }).n++;
+        slotMap[r.slot].v += +r.views || 0;
+      });
+      avgV = Math.round(avgV / ana.length);
+      Object.keys(catMap).forEach(function (k) { var a = catMap[k].v / catMap[k].n; if (a > bestAvg) { bestAvg = a; bestCat = k; } });
+      var bs = 0;
+      Object.keys(slotMap).forEach(function (k) { var a = slotMap[k].v / slotMap[k].n; if (a > bs) { bs = a; bestSlot = k; } });
+      stats.innerHTML =
+        '<div class="ana-stat"><b>' + ana.length + '</b><span>已记录</span></div>' +
+        '<div class="ana-stat"><b>' + avgV + '</b><span>平均播放</span></div>' +
+        '<div class="ana-stat"><b>' + esc(bestCat || '—') + '</b><span>最佳分类</span></div>' +
+        '<div class="ana-stat"><b>' + esc(bestSlot || '—') + '</b><span>最佳时段</span></div>';
+      var rows = ana.slice().reverse().map(function (r) {
+        var a = analyzeRec(r);
+        return '<div class="ana-rec">' +
+          '<span class="ana-rec__title">' + esc(r.t) + '</span>' +
+          '<span class="ana-grade ana-grade--' + a.grade + '">' + a.grade + ' ' + a.score + '分</span>' +
+          '<span class="ana-rec__meta">' + esc(r.c || '') + ' · ' + esc(r.date || '') + ' · 播' + (+r.views || 0) + ' 赞' + (+r.likes || 0) + ' 评' + (+r.comments || 0) + ' 转' + (+r.shares || 0) + '</span>' +
+          '<button class="ana-del" type="button" data-title="' + esc(r.t) + '" data-date="' + esc(r.date) + '">删除</button>' +
+        '</div>';
+      }).join('');
+      recs.innerHTML =
+        '<button class="ana-lib__toggle" type="button" id="ana-lib-toggle">记录库（' + ana.length + ' 条）' +
+        '<span class="ana-lib__arrow">' + (anaLibOpen ? '▾' : '▸') + '</span></button>' +
+        '<div class="ana-lib__body" id="ana-lib-body"' + (anaLibOpen ? '' : ' hidden') + '>' + rows + '</div>';
+    }
+    function renderAnaReport() {
+      var out = document.getElementById('ana-report-out');
+      if (!out) return;
+      if (!ana.length) { out.hidden = false; out.textContent = '还没有数据，先添加几条再来生成报告。'; return; }
+      var n = ana.length, sumV = 0, lrSum = 0, crSum = 0, srSum = 0, catMap = {}, slotMap = {};
+      ana.forEach(function (r) {
+        var v = +r.views || 0, l = +r.likes || 0, c = +r.comments || 0, s = +r.shares || 0;
+        sumV += v;
+        lrSum += v ? l / v : 0; crSum += v ? c / v : 0; srSum += v ? s / v : 0;
+        (catMap[r.c] = catMap[r.c] || { n: 0, v: 0 }).n++;
+        catMap[r.c].v += v;
+        (slotMap[r.slot] = slotMap[r.slot] || { n: 0, v: 0 }).n++;
+        slotMap[r.slot].v += v;
+      });
+      var lr = lrSum / n, cr = crSum / n, sr = srSum / n;
+      var bestCat = '', bestAvg = 0;
+      Object.keys(catMap).forEach(function (k) { var a = catMap[k].v / catMap[k].n; if (a > bestAvg) { bestAvg = a; bestCat = k; } });
+      var bestSlot = '', bs = 0;
+      Object.keys(slotMap).forEach(function (k) { var a = slotMap[k].v / slotMap[k].n; if (a > bs) { bs = a; bestSlot = k; } });
+      out.hidden = false;
+      out.textContent =
+        '基于你记录的 ' + n + ' 条视频：\n' +
+        '· 平均播放 ' + Math.round(sumV / n) + (bestCat ? '，「' + bestCat + '」表现最好（均播 ' + Math.round(bestAvg) + '），建议每天至少 1 条。' : '') + '\n' +
+        '· ' + (bestSlot ? '「' + bestSlot + '」时段播放最佳（均播 ' + Math.round(bs) + '），重要内容优先排此时段。' : '') + '\n' +
+        '· 整体点赞率 ' + fmtRate(lr) + (lr < 0.03 ? '（偏低：正文多用提问式）' : '（正常）') + '，评论率 ' + fmtRate(cr) + (cr < 0.01 ? '（偏低：置顶互动要加强）' : '（正常）') + '，转发率 ' + fmtRate(sr) + (sr < 0.01 ? '（偏低：加"转给爸妈"式钩子）' : '（正常）') + '。\n' +
+        '· 下一步：集中优化最差的一项，发布后 1 小时内回复评论并置顶提问。';
+    }
+    document.getElementById('ana-add').addEventListener('click', function () {
+      var dl = document.getElementById('ana-titles');
+      dl.innerHTML = DATA.map(function (g) { return '<option value="' + esc(g.t) + '"></option>'; }).join('');
+      document.getElementById('ana-f-date').value = fmtNow().slice(0, 10);
+      document.getElementById('ana-modal').hidden = false;
+    });
+    document.getElementById('ana-f-title').addEventListener('input', function () {
+      var v = this.value.trim();
+      var pv = document.getElementById('ana-preview');
+      var g = DATA.find(function (x) { return x.t === v; });
+      if (!g) { pv.hidden = true; return; }
+      var slot = document.getElementById('ana-f-slot');
+      if (slot) { slot.value = g.p || slot.value; }
+      pv.hidden = false;
+      pv.innerHTML =
+        '<div class="ana-preview__head">' + esc(g.c) + ' · ' + esc(g.d) + ' · ' + esc(g.p) + '</div>' +
+        '<div class="ana-preview__line"><b>字幕</b>' + esc(g.cap) + '</div>' +
+        '<div class="ana-preview__line"><b>正文</b>' + esc(g.b) + '</div>' +
+        '<div class="ana-preview__line"><b>置顶</b>' + esc(g.pin) + '</div>' +
+        '<div class="ana-preview__line"><b>话题</b>' + esc(g.tm.concat(g.ta).join(' ')) + '</div>';
+    });
+    document.getElementById('ana-cancel').addEventListener('click', function () { document.getElementById('ana-modal').hidden = true; });
+    document.getElementById('ana-save').addEventListener('click', function () {
+      var t = document.getElementById('ana-f-title').value.trim();
+      if (!t) { toast('请填写主题'); return; }
+      ana.push({
+        t: t,
+        c: catOfTitle(t),
+        slot: slotOf(document.getElementById('ana-f-slot').value),
+        date: document.getElementById('ana-f-date').value || fmtNow().slice(0, 10),
+        views: +document.getElementById('ana-f-views').value || 0,
+        likes: +document.getElementById('ana-f-likes').value || 0,
+        comments: +document.getElementById('ana-f-comments').value || 0,
+        shares: +document.getElementById('ana-f-shares').value || 0,
+      });
+      saveAna();
+      var a = analyzeRec(ana[ana.length - 1]);
+      renderAna();
+      document.getElementById('ana-modal').hidden = true;
+      toast('已记录分析：' + a.grade + ' · ' + a.score + '分');
+      ['ana-f-title', 'ana-f-views', 'ana-f-likes', 'ana-f-comments', 'ana-f-shares'].forEach(function (id) { document.getElementById(id).value = ''; });
+    });
+    document.getElementById('ana-report').addEventListener('click', renderAnaReport);
+    document.getElementById('ana-records').addEventListener('click', function (e) {
+      var tg = e.target.closest('#ana-lib-toggle');
+      if (tg) {
+        var body = document.getElementById('ana-lib-body');
+        if (!body) return;
+        anaLibOpen = body.hidden;
+        body.hidden = !anaLibOpen;
+        var ar = tg.querySelector('.ana-lib__arrow');
+        if (ar) ar.textContent = anaLibOpen ? '▾' : '▸';
+        return;
+      }
+      var b = e.target.closest('.ana-del');
+      if (!b) return;
+      if (!confirm('删除这条数据？')) return;
+      var t = b.getAttribute('data-title'), d = b.getAttribute('data-date');
+      ana = ana.filter(function (r) { return !(r.t === t && r.date === d); });
+      saveAna();
+      renderAna();
+      toast('已删除');
+    });
+
+    // ============ AI 深度分析（直连 DeepSeek，国内可用） ============
+    var AI_KEY_STORE = 'nvp_ai_key';
+    function aiKey() { try { return localStorage.getItem(AI_KEY_STORE) || ''; } catch (e) { return ''; } }
+    function aiSystem() {
+      return '你是微信视频号「怀旧题材」短视频账号的运营数据分析师。根据用户提供的每条视频数据（主题、分类、发布时间、播放、点赞、评论、转发），用中文给出结论：表现最好的视频与原因、最差的与原因、整体互动率是否健康、下一条视频的具体优化建议（选题方向、文案技巧、发布时间）。语气直接务实，300 字以内，分条列出。';
+    }
+    function aiPrompt() {
+      var s = '以下是近期发布的视频数据：\n';
+      ana.forEach(function (r, i) {
+        s += (i + 1) + '. 主题：' + (r.t || '') + '，分类：' + (r.c || '') + '，发布：' + (r.slot || '') + ' ' + (r.date || '') + '，播放：' + (+r.views || 0) + '，点赞：' + (+r.likes || 0) + '，评论：' + (+r.comments || 0) + '，转发：' + (+r.shares || 0) + '\n';
+      });
+      s += '\n请分析并给出可执行的优化建议。';
+      return s;
+    }
+    document.getElementById('ana-ai-set').addEventListener('click', function () {
+      var v = prompt('粘贴你的 DeepSeek API Key（sk- 开头）。密钥只保存在这台手机/电脑本地，直连 DeepSeek 官方，不经过任何中转服务器。', aiKey());
+      if (v === null) return;
+      v = v.trim();
+      localStorage.setItem(AI_KEY_STORE, v);
+      toast(v ? '已保存 DeepSeek Key（仅存本机）' : '已清除 AI Key');
+    });
+    document.getElementById('ana-ai').addEventListener('click', function () {
+      if (!ana.length) { toast('请先添加至少 1 条视频数据'); return; }
+      var key = aiKey();
+      if (!key) { toast('请先点「AI 设置」粘贴 DeepSeek Key'); return; }
+      var out = document.getElementById('ana-report-out');
+      var btn = document.getElementById('ana-ai');
+      out.hidden = false;
+      out.textContent = 'AI 深度分析中，请稍候（约 10-30 秒）…';
+      btn.disabled = true;
+      fetch('https://api.deepseek.com/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+          model: 'deepseek-chat',
+          messages: [
+            { role: 'system', content: aiSystem() },
+            { role: 'user', content: aiPrompt() },
+          ],
+          temperature: 0.7,
+          max_tokens: 700,
+        }),
+      })
+        .then(function (r) {
+          return r.json().then(function (j) { return { ok: r.ok, j: j }; });
+        })
+        .then(function (res) {
+          btn.disabled = false;
+          if (!res.ok || !res.j || !res.j.choices || !res.j.choices[0]) {
+            var msg = '错误 ' + (res.j && res.j.error && res.j.error.message ? res.j.error.message : (res.j && res.j.error ? res.j.error.type : ('HTTP ' + res.ok)));
+            if (res.ok === 401) msg = 'Key 无效或已过期，请重新在「AI 设置」填写';
+            if (res.ok === 429) msg = '请求过于频繁，请稍后再试';
+            out.textContent = 'AI 分析失败：' + msg + '\n可点「生成运营报告」先用本地引擎分析。';
+            return;
+          }
+          out.textContent = '【AI 深度分析】\n' + res.j.choices[0].message.content;
+        })
+        .catch(function (e) {
+          btn.disabled = false;
+          out.textContent = 'AI 分析失败（网络不通或未连网）：' + String((e && e.message) || e) + '\n可点「生成运营报告」先用本地引擎分析。';
+        });
+    });
+
+    loadAna();
+    renderAna();
     renderUsed();
     renderLog();
     renderCats();
