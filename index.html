@@ -427,6 +427,12 @@
       .plan__body { display: none; }
       .plan--open .plan__body { display: block; }
 
+      /* 发布建议 / 运营建议 折叠 */
+      .ops-guide__head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+      .ops-guide__body { display: none; }
+      .ops-guide--open .ops-guide__body { display: block; }
+      .ops-guide--open .plan__chevron { transform: rotate(180deg); }
+
       /* 使用步骤 */
       .plan__steps { font-size: 0.8125rem; padding: var(--space-3); gap: 6px; }
       .plan__steps-item { padding: 3px 10px; }
@@ -555,7 +561,8 @@
       <main>
 
                 <section class="ops-guide">
-          <h2>发布建议 · 每日三发</h2>
+          <h2 class="ops-guide__head">发布建议 · 每日三发<span class="plan__chevron" aria-hidden="true">▾</span></h2>
+          <div class="ops-guide__body">
           <p class="ops-guide__sub">900 组，早 / 午 / 晚各 300 组，一天三发，连发 300 天不重样。</p>
           <div class="ops-grid">
             <div class="ops-card ops-card--morning">
@@ -581,9 +588,11 @@
               <li>定时到黄金时段：早 7–9 / 午 12–14 / 晚 19–22 点</li>
             </ol>
           </div>
+          </div>
         </section>
         <section class="ops-guide">
-          <h2>运营建议 · 账号长期经营</h2>
+          <h2 class="ops-guide__head">运营建议 · 账号长期经营<span class="plan__chevron" aria-hidden="true">▾</span></h2>
+          <div class="ops-guide__body">
           <p class="ops-guide__sub">怀旧赛道拼的是坚持与互动，固定节奏 + 及时回复是核心。</p>
           <ul class="ops-tips">
             <li>发布后 1 小时内回复所有评论，并置顶一条互动提问，互动率直接决定推荐流量</li>
@@ -593,6 +602,7 @@
             <li>评论区用「报年份」「晒旧物」引导 UGC，用户评论就是新选题来源</li>
             <li>坚持 90 天不断更，怀旧类账号的粉丝沉淀周期通常在 3 个月左右</li>
           </ul>
+          </div>
         </section>
         <div class="searchbar">
           <input type="search" id="search" class="searchbar__input" placeholder="搜索标题 / 文案 / 场景关键词" aria-label="关键词搜索" />
@@ -611,8 +621,41 @@
 
   <script>
     var STYLE_IMG = '80年代中国农村怀旧场景，低饱和度复古怀旧色调，老照片质感，轻微做旧，电影感，竖屏9:16构图';
-    var STYLE_VID = '镜头缓慢推进或横移，人物动作舒缓，节奏缓慢无快切';
+    var STYLE_VID = '镜头缓慢推进或横移，人物动作舒缓自然、连贯不僵硬，衣角随动作自然摆动，微风带动发丝与枝叶，炊烟、水波、光影自然流动，画面有呼吸感，节奏缓慢无快切';
     var EXCLUDE = '现代建筑、柏油路、汽车、手机、鲜艳高饱和色彩、现代服装、肢体变形、多余手指、文字乱码、水印';
+
+    function bgmFor(g) {
+      var cat = g.c;
+      var time = timeOf(g);
+      var s = g.t + ' ' + g.cap + ' ' + g.s;
+      var fx = [];
+      if (/水/.test(s)) fx.push('流水声');
+      if (/雨/.test(s)) fx.push('雨声');
+      if (/集|庙会|社火/.test(s)) fx.push('集市嘈杂人声');
+      if (/蝉|知了/.test(s)) fx.push('蝉鸣');
+      if (/鸡|鸭|鹅|牛|羊/.test(s)) fx.push('家禽牲畜叫声');
+      if (/鞭炮|年|春联|灯笼|红包|守岁/.test(s)) fx.push('鞭炮声');
+      if (/河|塘|溪|井|湖|池/.test(s)) fx.push('水声');
+      if (/树|林|麦|稻|田|菜/.test(s)) fx.push('风吹草木沙沙声');
+      if (time === '上午') fx.push('晨间鸟鸣');
+      else if (time === '中午') fx.push('正午蝉鸣');
+      else if (time === '晚上') fx.push('傍晚虫鸣');
+      var bgm;
+      if (cat === '乡土') bgm = '怀旧钢琴+口琴民谣，舒缓温暖';
+      else if (cat === '夏日') bgm = '轻快木吉他，明朗清新';
+      else if (cat === '校园') bgm = '八音盒/手风琴旋律，青春舒缓';
+      else if (cat === '老物件') bgm = '老唱片沙沙底噪+柔和钢琴，沉稳怀旧';
+      else if (/端午/.test(g.t)) bgm = '舒缓民乐+古筝，清雅';
+      else if (/中秋/.test(g.t)) bgm = '古筝+琵琶，婉约';
+      else if (/元宵|花灯|灯会/.test(g.t)) bgm = '花灯民乐，欢快明亮';
+      else if (/清明/.test(g.t)) bgm = '笛箫清音，悠远';
+      else bgm = '喜庆民乐（锣鼓唢呐轻快版），热闹喜庆';
+      return {
+        bgm: bgm,
+        fx: fx.join('、'),
+        vo: '轻声女声旁白，念字幕钩子句：「' + g.cap + '」；也可纯字幕不配音，保留BGM与环境音'
+      };
+    }
 
     var DATA = [
       /* ===== 一、乡土童年（01-180） ===== */
@@ -1539,7 +1582,11 @@
 
     function planHtml(g, idx) {
       var promptImg = '【画面】' + g.s + '。' + STYLE_IMG + '\n【排除】' + EXCLUDE;
-      var promptVid = '【画面】' + g.s + '。' + g.v + '。' + STYLE_VID + '，时长' + g.d;
+      var a = bgmFor(g);
+      var promptVid = '【画面】' + g.s + '。' + g.v + '。' + STYLE_VID + '，时长' + g.d +
+        '\n【BGM】' + a.bgm +
+        '\n【音效】' + a.fx +
+        '\n【配音】' + a.vo;
       var copy = '【字幕】' + g.cap + '\n【正文】' + g.b + '\n【置顶】' + g.pin + '\n【话题】' + g.tm.join(' ') + ' ' + g.ta.join(' ');
       return '' +
         '<div class="plan">' +
@@ -1572,7 +1619,7 @@
             '</div>' +
             '<div class="copy-block">' +
               '<div class="copy-block__head">' +
-                '<span class="copy-block__label">视频生成提示词<small>画面 + 运镜 + 时长</small></span>' +
+                '<span class="copy-block__label">视频生成提示词<small>画面 + 运镜 + BGM + 配音</small></span>' +
                 '<button class="copy-btn" type="button" data-idx="' + idx + '" data-kind="p2">复制</button>' +
               '</div>' +
               '<pre class="copy-source zh" id="src-p2-' + idx + '">' + esc(promptVid) + '</pre>' +
@@ -1757,6 +1804,12 @@
         document.body.removeChild(ta);
       });
     }
+
+    document.addEventListener('click', function (e) {
+      if (!(window.matchMedia && window.matchMedia('(max-width: 560px)').matches)) return;
+      var h = e.target.closest('.ops-guide__head');
+      if (h) h.parentElement.classList.toggle('ops-guide--open');
+    });
 
     renderCats();
     render();
