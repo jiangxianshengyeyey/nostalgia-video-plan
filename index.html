@@ -80,7 +80,7 @@
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 16px; }
+    html { font-size: 16px; -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
     body {
       font-family: var(--font-sans);
       color: var(--ink);
@@ -244,6 +244,15 @@
       gap: var(--space-4);
       align-items: stretch;
     }
+    .plan__meta-wrap {
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: var(--space-2) var(--space-3);
+    }
+    .plan, .plan__body, .plan__grid, .plan__grid > *, .copy-block, .copy-block > *, .copy-source, .copy-line, .copy-line__text { min-width: 0; }
+    .copy-line__text { overflow-wrap: break-word; }
+    .copy-source { word-break: break-word; }
     .copy-block--full { grid-column: 1 / -1; }
     .plan__steps {
       display: flex;
@@ -445,14 +454,22 @@
       .plan__no { font-size: 0.75rem; }
       .plan__grid { gap: var(--space-3); }
 
-      /* 折叠卡片：点主题展开 */
-      .plan__head { cursor: pointer; flex-wrap: wrap; gap: var(--space-1) var(--space-2); }
-      .plan__chevron { display: inline-block; margin-left: auto; color: var(--accent); transition: transform 0.2s ease; }
-      .plan--open .plan__chevron { transform: rotate(180deg); }
+      /* 折叠卡片：点主题展开；三段式排版：标题行 / 信息行 / 按钮行 */
+      .plan__head { cursor: pointer; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+      .plan__no { order: 1; }
+      .plan__title { order: 2; flex: 1 1 auto; min-width: 0; font-size: 1.05rem; line-height: 1.45; }
+      .plan__ai-badge { order: 2; }
+      .plan__chevron { order: 3; margin-left: 0; }
+      .plan__meta-wrap { order: 4; flex: 1 1 100%; gap: 6px; }
+      .plan__meta { font-size: 0.75rem; padding: 2px 9px; }
+      .plan__time { white-space: nowrap; }
+      .ai-update, .use-btn { order: 5; flex: 1 1 40%; text-align: center; min-height: 42px; padding: 5px 12px; font-size: 0.9rem; }
       .plan__teaser { display: block; font-size: 0.8125rem; color: var(--muted); margin-top: var(--space-2); }
       .plan--open .plan__teaser { display: none; }
       .plan__body { display: none; }
       .plan--open .plan__body { display: block; }
+      .plan__chevron { display: inline-block; color: var(--accent); transition: transform 0.2s ease; }
+      .plan--open .plan__chevron { transform: rotate(180deg); }
 
       /* 发布建议 / 运营建议 折叠 */
       .ops-guide__head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
@@ -469,7 +486,6 @@
       .copy-block__label { font-size: 0.875rem; }
       .copy-block__label small { display: none; }
       .copy-btn { min-height: 40px; padding: 5px 16px; font-size: 0.875rem; }
-      .ai-update, .use-btn { min-height: 34px; padding: 4px 12px; font-size: 0.8rem; }
       .copy-source { font-size: 0.875rem; padding: var(--space-3); }
       .copy-line { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
       .copy-line__text { font-size: 0.9375rem; }
@@ -492,6 +508,24 @@
       .ops-card h3 { font-size: 0.9375rem; }
 
       footer.page-foot { font-size: 0.75rem; }
+    }
+
+    /* === 超小屏（≤400px）进一步自适应 === */
+    @media (max-width: 400px) {
+      body { padding: 0.5rem 0 calc(2rem + env(safe-area-inset-bottom)); }
+      .page__content,
+      .report-intro__surface { width: calc(100% - 0.75rem); }
+      .report-intro__surface { padding: var(--space-3); }
+      .report-intro h1 { font-size: 1.1rem; }
+      .plan { padding: var(--space-3); }
+      .plan__title { font-size: 1rem; }
+      .plan__meta-wrap { gap: 4px; }
+      .cat-btn, .time-btn { padding: 6px 13px; font-size: 0.85rem; }
+      .copy-block__head { padding: var(--space-2); }
+      .copy-line { padding: var(--space-2); }
+      .copy-source { font-size: 0.84375rem; padding: var(--space-2) var(--space-3); }
+      .tag { font-size: 0.8125rem; padding: 3px 11px; }
+      .ai-update, .use-btn { min-height: 40px; font-size: 0.875rem; }
     }
     @media print {
       .cat-btn, .pager, .copy-btn, .ai-update, .use-btn { display: none; }
@@ -1793,9 +1827,11 @@
           '<div class="plan__head">' +
             '<span class="plan__no">NO.' + (idx + 1) + '</span>' +
             '<span class="plan__title">' + esc(g.t) + '</span>' + aiBadge +
-            '<span class="plan__meta">' + esc(g.d) + '</span>' +
-            '<span class="plan__badge plan__badge-' + timeOf(g) + '">' + timeOf(g) + '</span>' +
-            '<span class="plan__meta plan__time"><span class="plan__time-label">建议发布时间</span>' + esc(g.p) + '</span>' +
+            '<span class="plan__meta-wrap">' +
+              '<span class="plan__meta">' + esc(g.d) + '</span>' +
+              '<span class="plan__badge plan__badge-' + timeOf(g) + '">' + timeOf(g) + '</span>' +
+              '<span class="plan__meta plan__time"><span class="plan__time-label">建议发布时间</span>' + esc(g.p) + '</span>' +
+            '</span>' +
             '<button class="ai-update" type="button" data-idx="' + idx + '" data-title="' + esc(g.t) + '">AI 更新</button>' +
             '<button class="use-btn" type="button" data-title="' + esc(g.t) + '">已使用</button>' +
             '<span class="plan__chevron" aria-hidden="true">▾</span>' +
