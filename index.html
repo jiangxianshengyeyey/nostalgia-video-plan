@@ -746,11 +746,6 @@
           <h2 class="ops-guide__head">已使用 · 话题库<span class="log-count" id="used-count"></span><span class="plan__chevron" aria-hidden="true">▾</span></h2>
           <div class="ops-guide__body">
             <ul class="used-list" id="used-list"></ul>
-            <div class="log-foot">
-              <span class="log-hint" id="cloud-hint">云同步：未开启（点「云同步设置」开启后多端互通）</span>
-              <button class="log-clear" id="cloud-set" type="button">云同步设置</button>
-              <button class="log-clear" id="cloud-push" type="button">立即同步</button>
-            </div>
           </div>
         </section>
         <div class="searchbar">
@@ -2218,107 +2213,6 @@
     var USED_KEY = 'usedList900';
     function getUsed() { try { return JSON.parse(localStorage.getItem(USED_KEY) || '[]'); } catch (e) { return []; } }
     function saveUsed(arr) { try { localStorage.setItem(USED_KEY, JSON.stringify(arr)); } catch (e) {} }
-
-    // ============ 已使用 · 云同步（GitHub，多设备互通） ============
-    var CLOUD_KEY = 'nvp_cloud_key';
-    var CLOUD_REPO = 'jiangxianshengyeyey/nostalgia-video-plan';
-    var CLOUD_FILE = 'data/used.json';
-    var cloudSha = null;
-    var cloudTimer = null;
-    function cloudToken() { try { return localStorage.getItem(CLOUD_KEY) || ''; } catch (e) { return ''; } }
-    function cloudHint(t) { var el = document.getElementById('cloud-hint'); if (el) el.textContent = t; }
-    function b64ToStr(b) { try { return decodeURIComponent(escape(atob(b))); } catch (e) { return atob(b); } }
-    function strToB64(s) { try { return btoa(unescape(encodeURIComponent(s))); } catch (e) { return btoa(s); } }
-    function ghApi(method, url, body) {
-      return fetch('https://api.github.com' + url, {
-        method: method,
-        headers: { 'Authorization': 'Bearer ' + cloudToken(), 'Accept': 'application/vnd.github+json', 'Content-Type': 'application/json' },
-        body: body ? JSON.stringify(body) : undefined,
-      }).then(function (r) {
-        return r.text().then(function (txt) {
-          var j = {}; try { j = JSON.parse(txt); } catch (e) {}
-          if (!r.ok) { var err = new Error((j && j.message) || ('HTTP ' + r.status)); err.status = r.status; throw err; }
-          return j;
-        });
-      });
-    }
-    function cloudPull() {
-      return ghApi('GET', '/repos/' + CLOUD_REPO + '/contents/' + CLOUD_FILE).then(function (j) {
-        cloudSha = j.sha;
-        var cloud = [];
-        try { cloud = JSON.parse(b64ToStr(j.content)); } catch (e) {}
-        if (!Array.isArray(cloud)) cloud = [];
-        var map = {};
-        getUsed().forEach(function (u) { map[u.t] = u; });
-        cloud.forEach(function (u) { if (u && u.t && !map[u.t]) map[u.t] = u; });
-        var merged = [];
-        for (var k in map) merged.push(map[k]);
-        merged.sort(function (a, b) { return (b.dt || '').localeCompare(a.dt || ''); });
-        saveUsed(merged);
-        renderUsed();
-        return merged;
-      });
-    }
-    function cloudPut(arr) {
-      var payload = strToB64(JSON.stringify(arr));
-      var doPut = function (sha) {
-        var body = { message: 'sync used ' + new Date().toISOString().slice(0, 16), content: payload };
-        if (sha) body.sha = sha;
-        return ghApi('PUT', '/repos/' + CLOUD_REPO + '/contents/' + CLOUD_FILE, body).then(function (j) {
-          cloudSha = j.content && j.content.sha ? j.content.sha : cloudSha;
-        });
-      };
-      var ensure = function () {
-        if (cloudSha) return Promise.resolve(cloudSha);
-        return ghApi('GET', '/repos/' + CLOUD_REPO + '/contents/' + CLOUD_FILE).then(function (j) { cloudSha = j.sha; return cloudSha; })
-          .catch(function (e) { if (e.status === 404) { cloudSha = null; return null; } throw e; });
-      };
-      return ensure().then(doPut);
-    }
-    function cloudPush(overwrite) {
-      var arr = getUsed();
-      if (overwrite) return cloudPut(arr);
-      return ghApi('GET', '/repos/' + CLOUD_REPO + '/contents/' + CLOUD_FILE).then(function (j) {
-        cloudSha = j.sha;
-        var cloud = [];
-        try { cloud = JSON.parse(b64ToStr(j.content)); } catch (e) {}
-        if (!Array.isArray(cloud)) cloud = [];
-        var map = {};
-        arr.forEach(function (u) { map[u.t] = u; });
-        cloud.forEach(function (u) { if (u && u.t && !map[u.t]) map[u.t] = u; });
-        var merged = [];
-        for (var k in map) merged.push(map[k]);
-        return cloudPut(merged);
-      }).catch(function (e) {
-        if (e.status === 404) return cloudPut(arr);
-        throw e;
-      });
-    }
-    function cloudPushSoon(overwrite) {
-      if (!cloudToken()) return;
-      clearTimeout(cloudTimer);
-      cloudTimer = setTimeout(function () { cloudPush(overwrite).catch(function () {}); }, 800);
-    }
-    function cloudSync(manual) {
-      if (!cloudToken()) { if (manual) toast('请先点「云同步设置」粘贴 GitHub Token'); return; }
-      cloudHint('云同步中…');
-      cloudPull().then(function () { return cloudPush(false); }).then(function () {
-        cloudHint('云同步：已开启，' + getUsed().length + ' 条记录多端互通');
-        if (manual) toast('同步完成');
-      }).catch(function (e) {
-        cloudHint('云同步：失败（' + (e.message || '网络异常') + '），点「立即同步」重试');
-        if (manual) toast('同步失败：' + (e.message || '网络异常'));
-      });
-    }
-    document.getElementById('cloud-set').addEventListener('click', function () {
-      var v = prompt('粘贴你的 GitHub Token（需要仓库读写权限，可直接用部署用的令牌）。密钥只保存在这台设备本地，数据直连 GitHub 官方 API，多设备自动互通。\n留空并确定 = 关闭云同步。', cloudToken());
-      if (v === null) return;
-      v = v.trim();
-      localStorage.setItem(CLOUD_KEY, v);
-      if (v) { toast('已保存 Token，正在首次同步…'); cloudSync(true); }
-      else { cloudHint('云同步：未开启'); toast('已关闭云同步'); }
-    });
-    document.getElementById('cloud-push').addEventListener('click', function () { cloudSync(true); });
     function findGroup(t) {
       for (var i = 0; i < DATA.length; i++) if (DATA[i].t === t) return DATA[i];
       return null;
@@ -2328,7 +2222,6 @@
       for (var i = 0; i < arr.length; i++) if (arr[i].t === t) return;
       arr.unshift({ t: t, dt: fmtNow() });
       saveUsed(arr);
-      cloudPushSoon();
     }
     function renderUsed() {
       var arr = getUsed();
@@ -2351,7 +2244,6 @@
       if (!b) return;
       var t = b.getAttribute('data-title');
       saveUsed(getUsed().filter(function (u) { return u.t !== t; }));
-      cloudPushSoon(true);
       toast('已撤销，主题放回列表');
       render();
       renderUsed();
@@ -2590,7 +2482,6 @@
     renderLog();
     renderCats();
     render();
-    if (cloudToken()) cloudSync(false);
   </script>
 </body>
 </html>
