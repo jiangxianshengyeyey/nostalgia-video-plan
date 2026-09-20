@@ -211,6 +211,12 @@
     }
     .plan__chevron { display: none; }
     .plan__teaser { display: none; }
+    /* 折叠面板（发布建议/运营建议/复盘中心/复制记录/已使用）：全设备可点击折叠 */
+    .ops-guide__head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+    .ops-guide__body { display: none; }
+    .ops-guide--open .ops-guide__body { display: block; }
+    .ops-guide--open .plan__chevron { transform: rotate(180deg); }
+    .ops-guide .plan__chevron { display: inline-block; color: var(--accent); transition: transform 0.2s ease; }
     .log-list { list-style: none; margin: 0; padding: 0; }
     .log-item { display: flex; gap: var(--space-3); align-items: baseline; padding: var(--space-2) 0; border-bottom: 1px dashed var(--border); font-size: 0.8125rem; }
     .log-item:last-child { border-bottom: none; }
@@ -470,12 +476,6 @@
       .plan--open .plan__body { display: block; }
       .plan__chevron { display: inline-block; color: var(--accent); transition: transform 0.2s ease; }
       .plan--open .plan__chevron { transform: rotate(180deg); }
-
-      /* 发布建议 / 运营建议 折叠 */
-      .ops-guide__head { display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
-      .ops-guide__body { display: none; }
-      .ops-guide--open .ops-guide__body { display: block; }
-      .ops-guide--open .plan__chevron { transform: rotate(180deg); }
 
       /* 使用步骤 */
       .plan__steps { font-size: 0.8125rem; padding: var(--space-3); gap: 6px; }
@@ -2450,8 +2450,20 @@
       });
     }
 
+    /* 折叠面板：全设备点击标题可折叠/展开；桌面默认展开可收起，移动默认折叠点击展开 */
+    (function () {
+      var mq = window.matchMedia('(max-width: 560px)');
+      var apply = function () {
+        var open = !mq.matches;
+        document.querySelectorAll('.ops-guide').forEach(function (sec) {
+          sec.classList.toggle('ops-guide--open', open);
+        });
+      };
+      apply();
+      if (mq.addEventListener) mq.addEventListener('change', apply);
+      else if (mq.addListener) mq.addListener(apply);
+    })();
     document.addEventListener('click', function (e) {
-      if (!(window.matchMedia && window.matchMedia('(max-width: 560px)').matches)) return;
       var h = e.target.closest('.ops-guide__head');
       if (h) h.parentElement.classList.toggle('ops-guide--open');
     });
